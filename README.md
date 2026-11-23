@@ -17,4 +17,10 @@ Or `docker compose run --rm agent`.
 
 ## Publishing
 
-Pushing to `main` or a `v*` tag triggers GitHub Actions to build a multi-arch (amd64/arm64) image and push it to `ghcr.io/myflavor/ubuntu-agent`.
+Push a `v*` tag to build a multi-arch (amd64/arm64) image and push it to `ghcr.io/myflavor/ubuntu-agent`:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+This publishes `1.0.0`, `1.0`, `1` and `latest` (pre-release tags such as `v1.1.0-rc.1` don't update `latest`).
