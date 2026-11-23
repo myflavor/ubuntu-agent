@@ -1,0 +1,7 @@
+services:
+  agent:
+    image: ghcr.io/myflavor/ubuntu-agent
+    volumes:
+      - /home/xin:/home/xin
+    stdin_open: true
+    tty: true
