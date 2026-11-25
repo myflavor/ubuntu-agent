@@ -3,13 +3,12 @@ set -euo pipefail
 
 log() { echo "[entrypoint] $*" >&2; }
 
+GROUP_NAME=agent
 USER_NAME="$(ls /home | head -n1)"
 if [ -z "${USER_NAME}" ]; then
     log "No directory under /home, running as root"
     exec "$@"
 fi
-
-GROUP_NAME=agent
 
 HOME_DIR="/home/${USER_NAME}"
 HOST_UID="$(stat -c %u "${HOME_DIR}")"
@@ -20,8 +19,8 @@ if [ "${HOST_UID}" -eq 0 ]; then
     exec "$@"
 fi
 
-USER_FILE=/var/lib/agent/user
 GROUP_FILE=/var/lib/agent/group
+USER_FILE=/var/lib/agent/user
 mkdir -p "$(dirname "${USER_FILE}")"
 
 if [ ! -f "${GROUP_FILE}" ]; then
