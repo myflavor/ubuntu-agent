@@ -9,6 +9,8 @@ if [ -z "${USER_NAME}" ]; then
     exec "$@"
 fi
 
+GROUP_NAME=agent
+
 HOME_DIR="/home/${USER_NAME}"
 HOST_UID="$(stat -c %u "${HOME_DIR}")"
 HOST_GID="$(stat -c %g "${HOME_DIR}")"
@@ -23,15 +25,15 @@ GROUP_FILE=/var/lib/agent/group
 mkdir -p "$(dirname "${USER_FILE}")"
 
 if [ ! -f "${GROUP_FILE}" ]; then
-    groupadd -o -g "${HOST_GID}" agent
-    echo "${HOST_GID}" > "${GROUP_FILE}"
+    groupadd -o -g "${HOST_GID}" "${GROUP_NAME}"
+    echo "${GROUP_NAME}" > "${GROUP_FILE}"
 fi
 
 if [ ! -f "${USER_FILE}" ]; then
-    useradd -o -M -u "${HOST_UID}" -g agent -d "${HOME_DIR}" -s /bin/bash "${USER_NAME}"
+    useradd -o -M -u "${HOST_UID}" -g "${GROUP_NAME}" -d "${HOME_DIR}" -s /bin/bash "${USER_NAME}"
     echo "${USER_NAME}" > "${USER_FILE}"
-    echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/agent
-    chmod 0440 /etc/sudoers.d/agent
+    echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${USER_NAME}"
+    chmod 0440 "/etc/sudoers.d/${USER_NAME}"
 fi
 
 RUN_UID="$(id -u "${USER_NAME}")"
