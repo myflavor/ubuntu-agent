@@ -19,22 +19,23 @@ if [ "${HOST_UID}" -eq 0 ]; then
 fi
 
 USER_FILE=/var/lib/agent/user
+GROUP_FILE=/var/lib/agent/group
 mkdir -p "$(dirname "${USER_FILE}")"
 
-if [ -f "${USER_FILE}" ]; then
-    log "Removing previous user $(cat "${USER_FILE}")"
-    userdel "$(cat "${USER_FILE}")" 2>/dev/null || true
-    rm -f "${USER_FILE}"
+if [ ! -f "${GROUP_FILE}" ]; then
+    groupadd -o -g "${HOST_GID}" agent
+    echo "${HOST_GID}" > "${GROUP_FILE}"
 fi
-groupdel agent 2>/dev/null || true
 
-groupadd -o -g "${HOST_GID}" agent
+if [ ! -f "${USER_FILE}" ]; then
+    useradd -o -M -u "${HOST_UID}" -g agent -d "${HOME_DIR}" -s /bin/bash "${USER_NAME}"
+    echo "${USER_NAME}" > "${USER_FILE}"
+    echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/agent
+    chmod 0440 /etc/sudoers.d/agent
+fi
 
-echo "${USER_NAME}" > "${USER_FILE}"
-useradd -o -M -u "${HOST_UID}" -g agent -d "${HOME_DIR}" -s /bin/bash "${USER_NAME}"
-echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/agent
-chmod 0440 /etc/sudoers.d/agent
-
-log "Running as ${USER_NAME} (${HOST_UID}:${HOST_GID})"
+RUN_UID="$(id -u "${USER_NAME}")"
+RUN_GID="$(id -g "${USER_NAME}")"
+log "Running as ${USER_NAME} (${RUN_UID}:${RUN_GID})"
 cd "${HOME_DIR}"
 exec gosu "${USER_NAME}" "$@"
